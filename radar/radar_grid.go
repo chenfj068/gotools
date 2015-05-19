@@ -33,6 +33,7 @@ func buildPointDoc(point RadarPoint) bson.M {
 	return m
 }
 func main() {
+	flag.Parse();
 	rootdir:=flag.String("roodir","/Users/tiger/radar","--rootdir=xxx")
 	worker:=flag.Int("worker",2,"--worker=4")
 	_dburl:=flag.String("db",dburl,"--db")
