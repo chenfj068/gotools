@@ -125,6 +125,7 @@ func readFile(code, filePath string, ch chan RadarPoint) {
 		fmt.Printf("%v\n", err)
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		s := scanner.Text()
