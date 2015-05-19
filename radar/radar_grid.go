@@ -73,15 +73,29 @@ func writeToDb(ch <-chan RadarPoint) <-chan int {
 		session.SetMode(mgo.Monotonic, true)
 		c := session.DB("radar").C("radar")
 		sum:=0
+		count:=0
+		bulk:=c.Bulk()
 		for {
 			point ,ok:= <-ch
 			if(ok==true){
-				c.Insert(point)
+				m:=bson.M{"code":point.Code,"loc":bson.M{"type":"Point","coordinates":[]float64{point.Lon,point.Lat}}}
 				sum++
+				count++
+				bulk.Insert(m)
+				if(count==100){
+					_,er:=bulk.Run()
+					if(er!=nil){
+						fmt.Printf("%v\n",er)
+					}
+					bulk=c.Bulk()
+				}
 				if(sum%500==0){
 					fmt.Println("save "+strconv.Itoa(sum)+" success")
 				}
 			}else{
+				if(count>0){
+					bulk.Run()
+				}
 				break
 			}
 		}
@@ -92,7 +106,6 @@ func writeToDb(ch <-chan RadarPoint) <-chan int {
 	}()
 	
 	return rch
-
 }
 func readPoint(dir string) <-chan RadarPoint {
 	ch := make(chan RadarPoint, 10)
