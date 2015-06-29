@@ -23,6 +23,10 @@ type RadarPoint struct {
 
 var (
 	dburl string = "54.223.146.200:27110"
+	defaultColl string = "radar"
+	defaultDb   string ="radar"
+	_coll string
+	_dbname  string
 )
 
 //db.radar.createIndex({"loc":"2dsphere"})
@@ -37,8 +41,12 @@ func main() {
 	rootdir:=flag.String("rootdir","/Users/tiger/radar","rootdir")
 	worker:=flag.Int("worker",2,"worker")
 	_dburl:=flag.String("db",dburl,"db")
+	_collP:=flag.String("coll",defaultColl,"collection")
+	_dbP:=flag.String("dbname",defaultDb,"dbname")
 	flag.Parse();
 	dburl=*_dburl
+	_coll=*_collP
+	_dbname=*_dbP
 	ch := readPoint(*rootdir)
 	saveCounter := *worker
 	chs := make([]<-chan int, 0, saveCounter)
@@ -71,7 +79,7 @@ func writeToDb(ch <-chan RadarPoint) <-chan int {
 		}
 		defer session.Close()
 		session.SetMode(mgo.Monotonic, true)
-		c := session.DB("radar").C("radar")
+		c := session.DB(_dbname).C(_coll)
 		sum:=0
 		
 		for {
